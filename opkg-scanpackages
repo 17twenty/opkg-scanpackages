@@ -20,7 +20,13 @@ do
 	if [ -f control ]
 	then
 		cat control >> Packages
-		echo -e "" >> Packages
+		size=$(stat --printf=%s "$i")
+		md5=$(md5sum "$i" | awk '{ print $1 }')
+		sha256=$(sha256sum "$i" | awk '{ print $1 }')
+		echo -e "Size: $size" >> Packages
+		echo -e "Filename: $i\n" >> Packages
+		echo -e "MD5Sum: $md5" >> Packages
+		echo -e "SHA256sum: $sha256" >> Packages
 
 		rm control
 		rm control.tar.gz
