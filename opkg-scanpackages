@@ -2,7 +2,7 @@
 
 # Simple script to generate Packages.gz file from ipk files
 #
-# Copyright (C) 2012 Nick Glynn <Nick.Glynn@feabhas.com>
+# Copyright (C) 2013 Nick Glynn <Nick.Glynn@feabhas.com>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -33,4 +33,7 @@ do
 	fi
 done
 
-gzip -9c Packages > Packages.gz
+if [ -f Packages ]
+then
+	gzip -9c Packages > Packages.gz
+fi
