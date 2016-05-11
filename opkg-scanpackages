@@ -1,39 +1,37 @@
-#!/usr/bin/env bash
+#!/bin/sh -e
 
 # Simple script to generate Packages.gz file from ipk files
 #
 # Copyright (C) 2013 Nick Glynn <Nick.Glynn@feabhas.com>
+# Copyright (C) 2016 Jan Sarenik <jan.sarenik@jasan.tk>
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, version 2.
 # 
 
+> Packages
+> Packages.stamps
 
-rm Packages.gz Packages >/dev/null 2>&1
-for i in `ls *.ipk` ;
+for i in *.ipk
 do
-	echo "Parsing $i"
-	ar -vx "$i" control.tar.gz >/dev/null 2>&1
-	tar zxvf control.tar.gz ./control >/dev/null 2>&1
+	echo "Parsing $i" >&2
+	ar -p "$i" control.tar.gz | tar zxO ./control >> Packages
 	
-	if [ -f control ]
-	then
-		cat control >> Packages
-		size=$(stat --printf=%s "$i")
-		md5=$(md5sum "$i" | awk '{ print $1 }')
-		sha256=$(sha256sum "$i" | awk '{ print $1 }')
-		echo -e "Size: $size" >> Packages
-		echo -e "Filename: $i" >> Packages
-		echo -e "MD5sum: $md5" >> Packages
-		echo -e "SHA256sum: $sha256\n" >> Packages
+	size=$(stat "$i" | awk '/  Size:/ {print $2}')
+	md5=$(md5sum "$i" | cut -b-32)
+	sha256=$(sha256sum "$i" | cut -b-64)
 
-		rm control
-		rm control.tar.gz
-	fi
+	{
+		echo "Size: $size"
+		echo "Filename: $i"
+		echo "MD5sum: $md5"
+		echo "SHA256sum: $sha256"
+		echo
+	} >> Packages
+
+	stamp=$(date -r "$i" +%s)
+	echo "$stamp $i" >> Packages.stamps
 done
 
-if [ -f Packages ]
-then
-	gzip -9c Packages > Packages.gz
-fi
+test -s Packages && gzip -9c Packages > Packages.gz
