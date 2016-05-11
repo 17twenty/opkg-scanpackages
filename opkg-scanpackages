@@ -11,12 +11,16 @@
 # 
 
 > Packages
+> Packages.stamps
 
 for i in *.ipk
 do
 	echo "Parsing $i" >&2
 	ar -p "$i" control.tar.gz | tar zxO ./control >> Packages
 	
+	stat=$(stat --printf=%s:%Y "$i")
+	size=${stat%:*}
+	stamp=${stat#*:}
 	size=$(stat --printf=%s "$i")
 	md5=$(md5sum "$i" | cut -b-32)
 	sha256=$(sha256sum "$i" | cut -b-64)
@@ -28,6 +32,8 @@ do
 		echo "SHA256sum: $sha256"
 		echo
 	} >> Packages
+
+	echo "$stamp $i" >> Packages.stamps
 done
 
 test -s Packages && gzip -9c Packages > Packages.gz
