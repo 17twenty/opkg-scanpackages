@@ -18,10 +18,7 @@ do
 	echo "Parsing $i" >&2
 	ar -p "$i" control.tar.gz | tar zxO ./control >> Packages
 	
-	stat=$(stat --printf=%s:%Y "$i")
-	size=${stat%:*}
-	stamp=${stat#*:}
-	size=$(stat --printf=%s "$i")
+	size=$(stat "$i" | awk '/  Size:/ {print $2}')
 	md5=$(md5sum "$i" | cut -b-32)
 	sha256=$(sha256sum "$i" | cut -b-64)
 
@@ -33,6 +30,7 @@ do
 		echo
 	} >> Packages
 
+	stamp=$(date -r "$i" +%s)
 	echo "$stamp $i" >> Packages.stamps
 done
 
